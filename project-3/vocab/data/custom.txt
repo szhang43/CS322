@@ -1,0 +1,6 @@
+red
+apple
+green
+hi
+bye
+how

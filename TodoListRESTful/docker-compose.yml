@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+    todo:
+        build: todo/.
+        command: python flask_todo.py
+        ports:
+            - "5002:$TODO_PORT"
+        depends_on:
+            - api
+        environment:
+            API_ADDR: api
+            API_PORT: $API_PORT
+            PORT: $TODO_PORT
+            DEBUG: "True"
+    api:
+        build: api/.
+        command: python flask_api.py
+        ports:
+            - "5001:$API_PORT"
+        depends_on:
+            - db
+        environment:
+            MONGODB_HOSTNAME: db
+            PORT: $API_PORT
+            DEBUG: "True"
+    db:
+        image: mongo:latest

@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+   <head>
+      <!-- Using Bootstrap, so that we're `responsive`! -->
+      <!-- Bootstrap requires the following three meta tags to fully function -->
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!-- Javascript and Cascading Style Sheets (css) libraries -->
+      <!-- mostly from content delivery networks                 -->
+      <!-- jquery; CDN load is usually quick because it's likely cached -->
+      <script type="text/javascript"
+         src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+      <!-- 12 column grid rearranges itself for smaller screens or windows. -->
+      <!-- This project is using an older version, make sure to check out newer versions! -->
+      <!-- http://getbootstrap.com/getting-started/  -->
+      <!-- Compiled and minified CSS -->
+      <link rel="stylesheet"
+         href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+         integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+         crossorigin="anonymous">
+      <!-- Compiled and minified JavaScript -->
+      <script
+         src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+         integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+         crossorigin="anonymous"></script>
+      <!-- Let's set our title! -->
+      <title>Vocabulary Anagram</title>
+      <!-- Our own css file.  Note how we can link directly here and not -->
+      <!-- write any routing code in the Flask application. -->
+      <link rel="stylesheet" href="/static/jumble.css" />
+   </head>
+   <body>
+      <div class="container">
+         <div class="row">
+            <div class="col-xs-6 text-center">
+               <h1>Words</h1>
+            </div>
+         </div>
+         <!-- Vocabularly words layed out in 6 columns;
+             bootstrap may collapse to fewer columns and
+             more rows if the window is narrow.
+            -->
+         <div class="row">
+            {% for word in g.vocab %}
+            <div class="col-xs-2 text-center"> {{ word }} </div>
+            {% if loop.index is divisibleby 3 %}
+         </div>
+         <!-- row -->
+         <div class="row">
+            {% endif %}
+            {% endfor %}
+         </div>
+         <!-- row -->
+         <br />
+         <div class="row">
+            <div class="col-xs-6 text-center">
+               Use letters from
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-xs-6 text-center lead">
+               <strong>{{ session.jumble }}</strong>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-xs-6 text-center">
+               to spell {{session.target_count}} words from the list.
+            </div>
+            <!-- col -->
+         </div>
+         <!-- row -->
+         <br />
+         <div class="row">
+            <div class="col-xs-6 text-center">
+               <form id="entry" method="GET"> 
+                  <label for="attempt">Word:</label>
+                  <input id="attempt" name="attempt" type="text" width="15"
+                     autocomplete="off"  autofocus />
+                  <!-- <input type="submit" name="try" /> -->
+               </form>
+            </div>
+         </div>
+
+      <!-- container -->
+   
+      <script>
+         $("#entry").submit( function(event) {
+               event.preventDefault();
+              });
+            
+         $("#attempt").keyup(function(event) {
+         var txt = $("#attempt").val();  // Current content of the input field
+         var keycode = event.which;      // They key that just went up
+         var letter = String.fromCharCode(keycode);
+         
+         if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
+
+         $.getJSON("/_check", {text: txt},
+            function(data){
+            
+               if(data.result.success == "success"){ // if the result is success
+                  window.location.replace("success"); // redirect the page to success.html
+               }
+               else if (data.result.matches== "match"){ // if it is a match
+                  $("#results").append(txt + " "); // append to the results html tag
+                  $("#attempt").val(""); // clear textbox
+                  $("#error").html(""); // re-edit the error message
+
+               }
+               else if(data.result.not_found == "not_found"){
+                  $("#error").html( `${txt} is not a valid word from the vocabulary! <br>`);
+               }
+
+               else if(data.result.in_jumble == "in_jumble"){
+                  $("#error").html( `${txt} is not a valid word from the anagram! <br>`);
+               }
+
+               else if (data.result.already_found == "already_found"){
+                  $("#error").html(`You already found ${txt}`)
+               }
+
+               else{
+                  $("#error").html("Can not be made with the current anagram.")
+               }
+            }
+         
+           )});
+
+        </script>
+        <br />
+        <div id = "error"></div>
+        <h2>You found:</h2>
+        <div id="results"></div>
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <!-- Mismatch, already found, etc. "flashed" from Python -->
+        {% for message in messages %}
+        <p class="message">{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+     </div>
+     
+   </body>
+</html>
+
+

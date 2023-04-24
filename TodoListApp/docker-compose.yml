@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+    todoapp:
+        build: todo/.
+        command: python3 flask_todo.py
+        ports: 
+          - "5001:5000"
+        depends_on:
+            - tododb
+        environment:
+            MONGODB_HOSTNAME: tododb
+    tododb:
+        image: mongo:5.0.5
